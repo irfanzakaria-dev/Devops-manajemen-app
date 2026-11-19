@@ -118,12 +118,15 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            session.workspace,
-            style: GoogleFonts.jetBrainsMono(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
+          Flexible(
+            child: Text(
+              session.workspace,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textPrimary,
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -250,7 +253,10 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                   ),
                 ),
                 const SizedBox(height: 3),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -267,15 +273,19 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.lock_outline_rounded, size: 12, color: AppTheme.textMuted),
-                    const SizedBox(width: 2),
-                    Text(
-                      'Akses Terkunci',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: AppTheme.textMuted,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.lock_outline_rounded, size: 12, color: AppTheme.textMuted),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Akses Terkunci',
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            color: AppTheme.textMuted,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -308,7 +318,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
           ],
         ),
         const SizedBox(height: 20),
-        _buildSectionTitle('PERMINTAAN PERSETUJUAN RILIS (DEPLOY APPROVAL)', AppTheme.primaryMint),
+        _buildSectionTitle('PERSETUJUAN RILIS (DEPLOY)', AppTheme.primaryMint),
         const SizedBox(height: 10),
         _buildCard(
           borderColor: AppTheme.primaryMint.withValues(alpha: 0.5),
@@ -317,11 +327,13 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
             children: [
               Row(
                 children: [
-                  Text(
-                    'Aplikasi Mobile v1.2.0',
-                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700),
+                  Expanded(
+                    child: Text(
+                      'Aplikasi Mobile v1.2.0',
+                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700),
+                    ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
@@ -453,14 +465,27 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
         ),
         const SizedBox(height: 20),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildSectionTitle('CATATAN KERJA HARIAN (SQLITE)', AppTheme.primaryMint),
-            TextButton(
-              onPressed: () => setState(() => _currentNavIndex = 1),
-              child: Text(
-                'Buka SQLite →',
-                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.primaryMint),
+            Expanded(
+              child: _buildSectionTitle('CATATAN KERJA (SQLITE)', AppTheme.primaryMint),
+            ),
+            const SizedBox(width: 8),
+            InkWell(
+              borderRadius: BorderRadius.circular(6),
+              onTap: () => setState(() => _currentNavIndex = 1),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Buka SQLite',
+                      style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: AppTheme.primaryMint),
+                    ),
+                    const SizedBox(width: 2),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 10, color: AppTheme.primaryMint),
+                  ],
+                ),
               ),
             ),
           ],
@@ -596,16 +621,20 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
 
   Widget _buildSectionTitle(String title, Color accent) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(width: 4, height: 14, color: accent),
         const SizedBox(width: 8),
-        Text(
-          title,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
-            color: AppTheme.textSecondary,
+        Flexible(
+          child: Text(
+            title,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              color: AppTheme.textSecondary,
+            ),
           ),
         ),
       ],

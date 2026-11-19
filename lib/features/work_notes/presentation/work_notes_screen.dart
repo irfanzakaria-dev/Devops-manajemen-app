@@ -128,11 +128,11 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStatItem('Total Catatan', '$total', AppTheme.textPrimary),
+          Expanded(child: _buildStatItem('Total Catatan', '$total', AppTheme.textPrimary)),
           Container(width: 1, height: 28, color: AppTheme.borderSubtle),
-          _buildStatItem('Siap Diuji QA', '$readyForQaCount', AppTheme.roleQA),
+          Expanded(child: _buildStatItem('Siap Diuji QA', '$readyForQaCount', AppTheme.roleQA)),
           Container(width: 1, height: 28, color: AppTheme.borderSubtle),
-          _buildStatItem('Selesai', '$doneCount', AppTheme.primaryMint),
+          Expanded(child: _buildStatItem('Selesai', '$doneCount', AppTheme.primaryMint)),
         ],
       ),
     );
@@ -227,31 +227,37 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
           // Baris Atas: Kategori & Prioritas & Menu
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppTheme.bgSurfaceElevated,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppTheme.borderSubtle),
-                ),
-                child: Text(
-                  note.category,
-                  style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppTheme.bgSurfaceElevated,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: AppTheme.borderSubtle),
+                  ),
+                  child: Text(
+                    note.category,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: priorityColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  'Prioritas: ${note.priority}',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: priorityColor,
+              const SizedBox(width: 6),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: priorityColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    note.priority,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: priorityColor,
+                    ),
                   ),
                 ),
               ),
@@ -333,22 +339,25 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
           // Baris Bawah: Status Badge & Tombol Aksi Estafet Tim
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  statusText,
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: statusColor,
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    statusText,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: statusColor,
+                    ),
                   ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               _buildRoleActionButton(note, session),
             ],
           ),
