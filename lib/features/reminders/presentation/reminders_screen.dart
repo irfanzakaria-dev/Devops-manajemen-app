@@ -91,19 +91,29 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   Future<void> _pickTime(ReminderItem reminder) async {
+    final isDark = AppTheme.isDark(context);
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: reminder.hour, minute: reminder.minute),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppTheme.primaryMint,
-              onPrimary: Color(0xFF0A0E17),
-              surface: AppTheme.bgSurface,
-              onSurface: AppTheme.textPrimary,
-            ),
-          ),
+          data: isDark
+              ? ThemeData.dark().copyWith(
+                  colorScheme: const ColorScheme.dark(
+                    primary: AppTheme.primaryMint,
+                    onPrimary: Color(0xFF0A0E17),
+                    surface: AppTheme.bgSurface,
+                    onSurface: AppTheme.textPrimary,
+                  ),
+                )
+              : ThemeData.light().copyWith(
+                  colorScheme: const ColorScheme.light(
+                    primary: AppTheme.primaryMint,
+                    onPrimary: Colors.white,
+                    surface: AppTheme.bgLightSurface,
+                    onSurface: AppTheme.textLightPrimary,
+                  ),
+                ),
           child: child!,
         );
       },
@@ -128,9 +138,10 @@ class _RemindersScreenState extends State<RemindersScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: AppTheme.bgSurfaceElevated,
+          backgroundColor: AppTheme.surfaceElevated(context),
           content: Text(
             'Jadwal "${reminder.title}" diubah menjadi ${reminder.formattedTime}',
+            style: TextStyle(color: AppTheme.text(context)),
           ),
         ),
       );
@@ -172,7 +183,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: AppTheme.surface(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -195,11 +206,15 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       children: [
                         Text(
                           'Tambah Pengingat / Alarm Baru',
-                          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.text(modalContext),
+                          ),
                         ),
                         const Spacer(),
                         IconButton(
-                          icon: const Icon(Icons.close_rounded, size: 20),
+                          icon: Icon(Icons.close_rounded, size: 20, color: AppTheme.textSubtle(modalContext)),
                           onPressed: () => Navigator.pop(modalContext),
                         ),
                       ],
@@ -207,29 +222,47 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     const SizedBox(height: 14),
                     TextField(
                       controller: titleController,
-                      style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 14),
+                      style: GoogleFonts.inter(color: AppTheme.text(modalContext), fontSize: 14),
                       decoration: InputDecoration(
                         labelText: 'Nama Pengingat / Agenda',
+                        labelStyle: TextStyle(color: AppTheme.textSubtle(modalContext)),
                         hintText: 'Contoh: Evaluasi Sprint Mingguan',
+                        hintStyle: TextStyle(color: AppTheme.textMutedColor(modalContext)),
                         filled: true,
-                        fillColor: AppTheme.bgSurface,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        fillColor: AppTheme.surfaceElevated(modalContext),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: descController,
-                      style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 13),
+                      style: GoogleFonts.inter(color: AppTheme.text(modalContext), fontSize: 13),
                       decoration: InputDecoration(
                         labelText: 'Keterangan Agenda',
+                        labelStyle: TextStyle(color: AppTheme.textSubtle(modalContext)),
                         hintText: 'Tuliskan deskripsi pengingat...',
+                        hintStyle: TextStyle(color: AppTheme.textMutedColor(modalContext)),
                         filled: true,
-                        fillColor: AppTheme.bgSurface,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        fillColor: AppTheme.surfaceElevated(modalContext),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 14),
-                    Text('PILIH JAM ALARM', style: GoogleFonts.jetBrainsMono(fontSize: 11, color: AppTheme.textMuted)),
+                    Text('PILIH JAM ALARM', style: GoogleFonts.jetBrainsMono(fontSize: 11, color: AppTheme.textMutedColor(modalContext))),
                     const SizedBox(height: 6),
                     InkWell(
                       borderRadius: BorderRadius.circular(10),
@@ -245,9 +278,9 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         decoration: BoxDecoration(
-                          color: AppTheme.bgSurface,
+                          color: AppTheme.surfaceElevated(modalContext),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppTheme.borderSubtle),
+                          border: Border.all(color: AppTheme.border(modalContext)),
                         ),
                         child: Row(
                           children: [
@@ -255,10 +288,14 @@ class _RemindersScreenState extends State<RemindersScreen> {
                             const SizedBox(width: 10),
                             Text(
                               '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')} WIB',
-                              style: GoogleFonts.jetBrainsMono(fontSize: 15, fontWeight: FontWeight.w700),
+                              style: GoogleFonts.jetBrainsMono(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.text(modalContext),
+                              ),
                             ),
                             const Spacer(),
-                            const Text('Ubah Jam', style: TextStyle(color: AppTheme.primaryMint, fontSize: 12)),
+                            const Text('Ubah Jam', style: TextStyle(color: AppTheme.primaryMint, fontSize: 12, fontWeight: FontWeight.w700)),
                           ],
                         ),
                       ),
@@ -324,11 +361,15 @@ class _RemindersScreenState extends State<RemindersScreen> {
     final activeCount = _reminders.where((r) => r.isEnabled).length;
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: AppTheme.bg(context),
       appBar: AppBar(
+        backgroundColor: AppTheme.bg(context),
         title: Text(
           'Pengingat & Alarm Tim',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.text(context),
+          ),
         ),
       ),
       body: SafeArea(
@@ -339,7 +380,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.bgSurface,
+                color: AppTheme.surface(context),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppTheme.primaryMint.withValues(alpha: 0.3)),
               ),
@@ -363,11 +404,15 @@ class _RemindersScreenState extends State<RemindersScreen> {
                           children: [
                             Text(
                               'Scheduler & Alarm Aktif',
-                              style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700),
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.text(context),
+                              ),
                             ),
                             Text(
                               '$activeCount jadwal alarm harian berulang diatur',
-                              style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
+                              style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSubtle(context)),
                             ),
                           ],
                         ),
@@ -375,7 +420,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Divider(color: AppTheme.borderSubtle, height: 1),
+                  Divider(color: AppTheme.border(context), height: 1),
                   const SizedBox(height: 10),
                   // Tombol Coba Notifikasi Langsung (Untuk Pembuktian Tugas)
                   SizedBox(
@@ -412,7 +457,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.8,
-                    color: AppTheme.textSecondary,
+                    color: AppTheme.textSubtle(context),
                   ),
                 ),
               ],
@@ -424,12 +469,12 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.bgSurface,
+                  color: AppTheme.surface(context),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: reminder.isEnabled
                         ? AppTheme.primaryMint.withValues(alpha: 0.4)
-                        : AppTheme.borderSubtle,
+                        : AppTheme.border(context),
                   ),
                 ),
                 child: Column(
@@ -447,12 +492,12 @@ class _RemindersScreenState extends State<RemindersScreen> {
                             decoration: BoxDecoration(
                               color: reminder.isEnabled
                                   ? AppTheme.primaryMint.withValues(alpha: 0.15)
-                                  : AppTheme.bgSurfaceElevated,
+                                  : AppTheme.surfaceElevated(context),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                 color: reminder.isEnabled
                                     ? AppTheme.primaryMint
-                                    : AppTheme.borderSubtle,
+                                    : AppTheme.border(context),
                               ),
                             ),
                             child: Row(
@@ -461,7 +506,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                                 Icon(
                                   Icons.access_time_filled_rounded,
                                   size: 14,
-                                  color: reminder.isEnabled ? AppTheme.primaryMint : AppTheme.textMuted,
+                                  color: reminder.isEnabled ? AppTheme.primaryMint : AppTheme.textMutedColor(context),
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
@@ -469,7 +514,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                                   style: GoogleFonts.jetBrainsMono(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w800,
-                                    color: reminder.isEnabled ? AppTheme.primaryMint : AppTheme.textMuted,
+                                    color: reminder.isEnabled ? AppTheme.primaryMint : AppTheme.textMutedColor(context),
                                   ),
                                 ),
                               ],
@@ -484,8 +529,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
                             value: reminder.isEnabled,
                             activeThumbColor: AppTheme.primaryMint,
                             activeTrackColor: AppTheme.primaryMint.withValues(alpha: 0.3),
-                            inactiveThumbColor: AppTheme.textMuted,
-                            inactiveTrackColor: AppTheme.bgSurfaceElevated,
+                            inactiveThumbColor: AppTheme.textMutedColor(context),
+                            inactiveTrackColor: AppTheme.surfaceElevated(context),
                             onChanged: (val) => _toggleReminder(reminder, val),
                           ),
                         ),
@@ -497,7 +542,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: reminder.isEnabled ? AppTheme.textPrimary : AppTheme.textMuted,
+                        color: reminder.isEnabled ? AppTheme.text(context) : AppTheme.textMutedColor(context),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -505,7 +550,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       reminder.description,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: AppTheme.textSecondary,
+                        color: AppTheme.textSubtle(context),
                         height: 1.3,
                       ),
                     ),
@@ -515,18 +560,18 @@ class _RemindersScreenState extends State<RemindersScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppTheme.bgSurfaceElevated,
+                            color: AppTheme.surfaceElevated(context),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             reminder.category,
-                            style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textSecondary),
+                            style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textSubtle(context)),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           '📅 ${reminder.daysSummary}',
-                          style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
+                          style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMutedColor(context)),
                         ),
                       ],
                     ),

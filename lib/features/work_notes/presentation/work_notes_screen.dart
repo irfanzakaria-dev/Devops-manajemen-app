@@ -52,16 +52,20 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
     final session = UserSession.instance;
 
     return Scaffold(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: AppTheme.bg(context),
       appBar: AppBar(
+        backgroundColor: AppTheme.bg(context),
         title: Text(
           'Catatan Kerja Tim',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.text(context),
+          ),
         ),
         actions: [
           IconButton(
             tooltip: 'Segarkan Data SQLite',
-            icon: const Icon(Icons.refresh_rounded, size: 20),
+            icon: Icon(Icons.refresh_rounded, size: 20, color: AppTheme.text(context)),
             onPressed: _loadNotes,
           ),
         ],
@@ -74,24 +78,24 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
             : Column(
                 children: [
                   // Ringkasan Statistik Singkat
-                  _buildStatsRow(),
+                  _buildStatsRow(context),
                   // Filter Chips
-                  _buildFilterChips(),
+                  _buildFilterChips(context),
                   const SizedBox(height: 10),
                   // List Catatan Kerja
                   Expanded(
                     child: _filteredNotes.isEmpty
-                        ? _buildEmptyState()
+                        ? _buildEmptyState(context)
                         : RefreshIndicator(
                             color: AppTheme.primaryMint,
-                            backgroundColor: AppTheme.bgSurface,
+                            backgroundColor: AppTheme.surface(context),
                             onRefresh: _loadNotes,
                             child: ListView.builder(
                               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                               itemCount: _filteredNotes.length,
                               itemBuilder: (context, index) {
                                 final note = _filteredNotes[index];
-                                return _buildNoteCard(note, session);
+                                return _buildNoteCard(context, note, session);
                               },
                             ),
                           ),
@@ -112,7 +116,7 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
     );
   }
 
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow(BuildContext context) {
     final total = _notes.length;
     final doneCount = _notes.where((n) => n.status == 'done').length;
     final readyForQaCount = _notes.where((n) => n.status == 'ready_for_qa').length;
@@ -121,24 +125,24 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: AppTheme.surface(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.borderSubtle),
+        border: Border.all(color: AppTheme.border(context)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Expanded(child: _buildStatItem('Total Catatan', '$total', AppTheme.textPrimary)),
-          Container(width: 1, height: 28, color: AppTheme.borderSubtle),
-          Expanded(child: _buildStatItem('Siap Diuji QA', '$readyForQaCount', AppTheme.roleQA)),
-          Container(width: 1, height: 28, color: AppTheme.borderSubtle),
-          Expanded(child: _buildStatItem('Selesai', '$doneCount', AppTheme.primaryMint)),
+          Expanded(child: _buildStatItem(context, 'Total Catatan', '$total', AppTheme.text(context))),
+          Container(width: 1, height: 28, color: AppTheme.border(context)),
+          Expanded(child: _buildStatItem(context, 'Siap Diuji QA', '$readyForQaCount', AppTheme.roleQA)),
+          Container(width: 1, height: 28, color: AppTheme.border(context)),
+          Expanded(child: _buildStatItem(context, 'Selesai', '$doneCount', AppTheme.primaryMint)),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String label, String value, Color color) {
+  Widget _buildStatItem(BuildContext context, String label, String value, Color color) {
     return Column(
       children: [
         Text(
@@ -148,13 +152,13 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
         const SizedBox(height: 2),
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
+          style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSubtle(context)),
         ),
       ],
     );
   }
 
-  Widget _buildFilterChips() {
+  Widget _buildFilterChips(BuildContext context) {
     final filters = ['Semua', 'Tugas Saya', 'Siap Diuji', 'Selesai'];
 
     return SingleChildScrollView(
@@ -171,12 +175,12 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
               labelStyle: GoogleFonts.inter(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF0A0E17) : AppTheme.textSecondary,
+                color: isSelected ? const Color(0xFF0A0E17) : AppTheme.textSubtle(context),
               ),
-              backgroundColor: AppTheme.bgSurface,
+              backgroundColor: AppTheme.surface(context),
               selectedColor: AppTheme.primaryMint,
               side: BorderSide(
-                color: isSelected ? AppTheme.primaryMint : AppTheme.borderSubtle,
+                color: isSelected ? AppTheme.primaryMint : AppTheme.border(context),
               ),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               onSelected: (val) {
@@ -189,14 +193,14 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
     );
   }
 
-  Widget _buildNoteCard(WorkNote note, UserSession session) {
-    Color priorityColor = AppTheme.textSecondary;
+  Widget _buildNoteCard(BuildContext context, WorkNote note, UserSession session) {
+    Color priorityColor = AppTheme.textSubtle(context);
     if (note.priority == 'Kritis') priorityColor = AppTheme.sev1Critical;
     if (note.priority == 'Tinggi') priorityColor = AppTheme.sev2Warning;
     if (note.priority == 'Sedang') priorityColor = AppTheme.roleDeveloper;
 
     String statusText = 'Belum Dikerjakan';
-    Color statusColor = AppTheme.textMuted;
+    Color statusColor = AppTheme.textMutedColor(context);
     if (note.status == 'in_progress') {
       statusText = 'Sedang Dikerjakan';
       statusColor = AppTheme.roleDeveloper;
@@ -212,12 +216,12 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: AppTheme.surface(context),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: note.status == 'ready_for_qa'
               ? AppTheme.roleQA.withValues(alpha: 0.5)
-              : AppTheme.borderSubtle,
+              : AppTheme.border(context),
           width: note.status == 'ready_for_qa' ? 1.5 : 1.0,
         ),
       ),
@@ -231,14 +235,14 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: AppTheme.bgSurfaceElevated,
+                    color: AppTheme.surfaceElevated(context),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppTheme.borderSubtle),
+                    border: Border.all(color: AppTheme.border(context)),
                   ),
                   child: Text(
                     note.category,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textSecondary),
+                    style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.textSubtle(context)),
                   ),
                 ),
               ),
@@ -263,8 +267,8 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
               ),
               const Spacer(),
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert_rounded, size: 18, color: AppTheme.textSecondary),
-                color: AppTheme.bgSurfaceElevated,
+                icon: Icon(Icons.more_vert_rounded, size: 18, color: AppTheme.textSubtle(context)),
+                color: AppTheme.surfaceElevated(context),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 onSelected: (val) {
                   if (val == 'edit') {
@@ -274,7 +278,10 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'edit', child: Text('Edit Catatan')),
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Text('Edit Catatan', style: TextStyle(color: AppTheme.text(context))),
+                  ),
                   const PopupMenuItem(
                     value: 'delete',
                     child: Text('Hapus Catatan', style: TextStyle(color: AppTheme.sev1Critical)),
@@ -291,14 +298,14 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
               fontSize: 15,
               fontWeight: FontWeight.w700,
               decoration: note.status == 'done' ? TextDecoration.lineThrough : null,
-              color: note.status == 'done' ? AppTheme.textMuted : AppTheme.textPrimary,
+              color: note.status == 'done' ? AppTheme.textMutedColor(context) : AppTheme.text(context),
             ),
           ),
           if (note.description.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(
               note.description,
-              style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary, height: 1.3),
+              style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSubtle(context), height: 1.3),
             ),
           ],
           const SizedBox(height: 12),
@@ -308,7 +315,7 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppTheme.bgSurfaceElevated,
+                  color: AppTheme.surfaceElevated(context),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Row(
@@ -318,7 +325,7 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
                     const SizedBox(width: 4),
                     Text(
                       note.gitBranch,
-                      style: GoogleFonts.jetBrainsMono(fontSize: 10, color: AppTheme.textPrimary),
+                      style: GoogleFonts.jetBrainsMono(fontSize: 10, color: AppTheme.text(context)),
                     ),
                   ],
                 ),
@@ -328,13 +335,13 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
                 child: Text(
                   note.authorName,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
+                  style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMutedColor(context)),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          const Divider(color: AppTheme.borderSubtle, height: 1),
+          Divider(color: AppTheme.border(context), height: 1),
           const SizedBox(height: 10),
           // Baris Bawah: Status Badge & Tombol Aksi Estafet Tim
           Row(
@@ -424,7 +431,7 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
     await _loadNotes();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(backgroundColor: AppTheme.bgSurfaceElevated, content: Text(message)),
+      SnackBar(backgroundColor: AppTheme.surfaceElevated(context), content: Text(message, style: TextStyle(color: AppTheme.text(context)))),
     );
   }
 
@@ -432,13 +439,13 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.bgSurface,
-        title: Text('Hapus Catatan?', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
-        content: Text('Catatan "${note.title}" akan dihapus permanen dari database SQLite.'),
+        backgroundColor: AppTheme.surface(context),
+        title: Text('Hapus Catatan?', style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppTheme.text(context))),
+        content: Text('Catatan "${note.title}" akan dihapus permanen dari database SQLite.', style: GoogleFonts.inter(color: AppTheme.textSubtle(context))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
+            child: Text('Batal', style: TextStyle(color: AppTheme.textMutedColor(context))),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.sev1Critical),
@@ -466,7 +473,7 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: AppTheme.surface(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -489,11 +496,15 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
                       children: [
                         Text(
                           isEditing ? 'Edit Catatan Kerja' : 'Tambah Catatan Kerja Baru',
-                          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.text(modalContext),
+                          ),
                         ),
                         const Spacer(),
                         IconButton(
-                          icon: const Icon(Icons.close_rounded, size: 20),
+                          icon: Icon(Icons.close_rounded, size: 20, color: AppTheme.textSubtle(modalContext)),
                           onPressed: () => Navigator.pop(modalContext),
                         ),
                       ],
@@ -502,13 +513,22 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
                     // Judul Tugas
                     TextField(
                       controller: titleController,
-                      style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 14),
+                      style: GoogleFonts.inter(color: AppTheme.text(modalContext), fontSize: 14),
                       decoration: InputDecoration(
                         labelText: 'Judul Tugas / Catatan',
+                        labelStyle: TextStyle(color: AppTheme.textSubtle(modalContext)),
                         hintText: 'Contoh: Perbaiki validasi token login',
+                        hintStyle: TextStyle(color: AppTheme.textMutedColor(modalContext)),
                         filled: true,
-                        fillColor: AppTheme.bgSurface,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        fillColor: AppTheme.surfaceElevated(modalContext),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -516,42 +536,67 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
                     TextField(
                       controller: descController,
                       maxLines: 2,
-                      style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 13),
+                      style: GoogleFonts.inter(color: AppTheme.text(modalContext), fontSize: 13),
                       decoration: InputDecoration(
                         labelText: 'Keterangan / Catatan Teknis',
+                        labelStyle: TextStyle(color: AppTheme.textSubtle(modalContext)),
                         hintText: 'Tuliskan detail pekerjaan atau kendala...',
+                        hintStyle: TextStyle(color: AppTheme.textMutedColor(modalContext)),
                         filled: true,
-                        fillColor: AppTheme.bgSurface,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        fillColor: AppTheme.surfaceElevated(modalContext),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     // Git Branch
                     TextField(
                       controller: branchController,
-                      style: GoogleFonts.jetBrainsMono(color: AppTheme.textPrimary, fontSize: 13),
+                      style: GoogleFonts.jetBrainsMono(color: AppTheme.text(modalContext), fontSize: 13),
                       decoration: InputDecoration(
                         labelText: 'Nama Git Branch',
+                        labelStyle: TextStyle(color: AppTheme.textSubtle(modalContext)),
                         prefixIcon: const Icon(Icons.alt_route_rounded, size: 16, color: AppTheme.primaryMint),
                         filled: true,
-                        fillColor: AppTheme.bgSurface,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        fillColor: AppTheme.surfaceElevated(modalContext),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 14),
                     // Pilihan Kategori
-                    Text('KATEGORI', style: GoogleFonts.jetBrainsMono(fontSize: 11, color: AppTheme.textMuted)),
+                    Text('KATEGORI', style: GoogleFonts.jetBrainsMono(fontSize: 11, color: AppTheme.textMutedColor(modalContext))),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
                       initialValue: category,
-                      dropdownColor: AppTheme.bgSurfaceElevated,
+                      dropdownColor: AppTheme.surfaceElevated(modalContext),
+                      style: TextStyle(color: AppTheme.text(modalContext)),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: AppTheme.bgSurface,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        fillColor: AppTheme.surfaceElevated(modalContext),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: AppTheme.border(modalContext)),
+                        ),
                       ),
                       items: ['Fitur Baru', 'Perbaikan Bug', 'Pengujian', 'DevOps & Server']
-                          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                          .map((c) => DropdownMenuItem(value: c, child: Text(c, style: TextStyle(color: AppTheme.text(modalContext)))))
                           .toList(),
                       onChanged: (val) {
                         if (val != null) setModalState(() => category = val);
@@ -559,7 +604,7 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
                     ),
                     const SizedBox(height: 14),
                     // Pilihan Prioritas
-                    Text('PRIORITAS', style: GoogleFonts.jetBrainsMono(fontSize: 11, color: AppTheme.textMuted)),
+                    Text('PRIORITAS', style: GoogleFonts.jetBrainsMono(fontSize: 11, color: AppTheme.textMutedColor(modalContext))),
                     const SizedBox(height: 6),
                     Row(
                       children: ['Rendah', 'Sedang', 'Tinggi', 'Kritis'].map((p) {
@@ -571,10 +616,10 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
                               margin: const EdgeInsets.symmetric(horizontal: 3),
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
-                                color: isSelected ? AppTheme.primaryMint : AppTheme.bgSurface,
+                                color: isSelected ? AppTheme.primaryMint : AppTheme.surfaceElevated(modalContext),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: isSelected ? AppTheme.primaryMint : AppTheme.borderSubtle,
+                                  color: isSelected ? AppTheme.primaryMint : AppTheme.border(modalContext),
                                 ),
                               ),
                               child: Center(
@@ -583,7 +628,7 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
                                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                    color: isSelected ? const Color(0xFF0A0E17) : AppTheme.textPrimary,
+                                    color: isSelected ? const Color(0xFF0A0E17) : AppTheme.text(modalContext),
                                   ),
                                 ),
                               ),
@@ -647,21 +692,21 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.note_alt_outlined, size: 48, color: AppTheme.textMuted),
+          Icon(Icons.note_alt_outlined, size: 48, color: AppTheme.textMutedColor(context)),
           const SizedBox(height: 12),
           Text(
             'Belum ada catatan kerja',
-            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
+            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.text(context)),
           ),
           const SizedBox(height: 4),
           Text(
             'Klik tombol "+ Catatan Baru" untuk menambahkan tugas ke SQLite.',
-            style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
+            style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSubtle(context)),
           ),
         ],
       ),

@@ -27,8 +27,8 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
         final currentRole = session.role;
 
         return Scaffold(
-          backgroundColor: AppTheme.bgDark,
-          appBar: _currentNavIndex == 0 ? _buildAppBar(session) : null,
+          backgroundColor: AppTheme.bg(context),
+          appBar: _currentNavIndex == 0 ? _buildAppBar(context, session) : null,
           body: IndexedStack(
             index: _currentNavIndex,
             children: [
@@ -40,16 +40,16 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Banner Info Akun & Role yang Terkunci
-                      _buildUserRoleBanner(session),
+                      _buildUserRoleBanner(context, session),
                       const SizedBox(height: 20),
 
                       // Tampilan Khusus Hanya Untuk Role Yang Sedang Login
                       if (currentRole == UserRole.lead)
-                        _buildLeadDashboard(session)
+                        _buildLeadDashboard(context, session)
                       else if (currentRole == UserRole.developer)
-                        _buildDeveloperDashboard(session)
+                        _buildDeveloperDashboard(context, session)
                       else
-                        _buildQADashboard(session),
+                        _buildQADashboard(context, session),
                     ],
                   ),
                 ),
@@ -62,15 +62,15 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               const SettingsScreen(),
             ],
           ),
-          bottomNavigationBar: _buildBottomNav(),
+          bottomNavigationBar: _buildBottomNav(context),
         );
       },
     );
   }
 
-  PreferredSizeWidget _buildAppBar(UserSession session) {
+  PreferredSizeWidget _buildAppBar(BuildContext context, UserSession session) {
     return AppBar(
-      backgroundColor: AppTheme.bgDark,
+      backgroundColor: AppTheme.bg(context),
       title: Row(
         children: [
           Container(
@@ -89,7 +89,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               style: GoogleFonts.jetBrainsMono(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.textPrimary,
+                color: AppTheme.text(context),
               ),
             ),
           ),
@@ -97,9 +97,9 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: AppTheme.bgSurfaceElevated,
+              color: AppTheme.surfaceElevated(context),
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: AppTheme.borderSubtle),
+              border: Border.all(color: AppTheme.border(context)),
             ),
             child: Text(
               'Online',
@@ -115,31 +115,31 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
       actions: [
         IconButton(
           tooltip: 'Keluar (Logout)',
-          icon: const Icon(Icons.logout_rounded, size: 20, color: AppTheme.textSecondary),
-          onPressed: () => _confirmSignOut(session),
+          icon: Icon(Icons.logout_rounded, size: 20, color: AppTheme.textSubtle(context)),
+          onPressed: () => _confirmSignOut(context, session),
         ),
       ],
     );
   }
 
-  void _confirmSignOut(UserSession session) {
+  void _confirmSignOut(BuildContext context, UserSession session) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.bgSurface,
+        backgroundColor: AppTheme.surface(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Keluar dari Akun?',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
+          style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: AppTheme.text(context)),
         ),
         content: Text(
           'Untuk berganti peran (Lead / Developer / QA), Anda harus keluar dan masuk kembali.',
-          style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
+          style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSubtle(context)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Batal', style: GoogleFonts.inter(color: AppTheme.textMuted)),
+            child: Text('Batal', style: GoogleFonts.inter(color: AppTheme.textMutedColor(context))),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -149,7 +149,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
             onPressed: () async {
               Navigator.pop(ctx);
               await session.signOut();
-              if (!mounted) return;
+              if (!context.mounted) return;
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const WelcomeScreen()),
@@ -163,7 +163,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
     );
   }
 
-  Widget _buildUserRoleBanner(UserSession session) {
+  Widget _buildUserRoleBanner(BuildContext context, UserSession session) {
     final role = session.role;
     Color roleColor = role == UserRole.lead
         ? AppTheme.roleLead
@@ -181,7 +181,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: AppTheme.surface(context),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: roleColor.withValues(alpha: 0.3)),
       ),
@@ -213,7 +213,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.textPrimary,
+                    color: AppTheme.text(context),
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -240,13 +240,13 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.lock_outline_rounded, size: 12, color: AppTheme.textMuted),
+                        Icon(Icons.lock_outline_rounded, size: 12, color: AppTheme.textMutedColor(context)),
                         const SizedBox(width: 3),
                         Text(
                           'Akses Terkunci',
                           style: GoogleFonts.inter(
                             fontSize: 10,
-                            color: AppTheme.textMuted,
+                            color: AppTheme.textMutedColor(context),
                           ),
                         ),
                       ],
@@ -264,27 +264,28 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
   // ==========================================
   // 1. TAMPILAN KHUSUS LEAD (KETUA TIM)
   // ==========================================
-  Widget _buildLeadDashboard(UserSession session) {
+  Widget _buildLeadDashboard(BuildContext context, UserSession session) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('RINGKASAN PROGRES TIM', AppTheme.roleLead),
+        _buildSectionTitle(context, 'RINGKASAN PROGRES TIM', AppTheme.roleLead),
         const SizedBox(height: 10),
         Row(
           children: [
             Expanded(
-              child: _buildMetricBox('5 Selesai', 'Tugas coding beres', AppTheme.primaryMint),
+              child: _buildMetricBox(context, '5 Selesai', 'Tugas coding beres', AppTheme.primaryMint),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: _buildMetricBox('1 Siap Rilis', 'Menunggu persetujuan', AppTheme.roleLead),
+              child: _buildMetricBox(context, '1 Siap Rilis', 'Menunggu persetujuan', AppTheme.roleLead),
             ),
           ],
         ),
         const SizedBox(height: 20),
-        _buildSectionTitle('PERSETUJUAN RILIS (DEPLOY)', AppTheme.primaryMint),
+        _buildSectionTitle(context, 'PERSETUJUAN RILIS (DEPLOY)', AppTheme.primaryMint),
         const SizedBox(height: 10),
         _buildCard(
+          context,
           borderColor: AppTheme.primaryMint.withValues(alpha: 0.5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +295,11 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                   Expanded(
                     child: Text(
                       'Aplikasi Mobile v1.2.0',
-                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700),
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.text(context),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -318,7 +323,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               const SizedBox(height: 6),
               Text(
                 'Diajukan oleh Sarah Chen (Developer) · 3 perbaikan bug siap diluncurkan.',
-                style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
+                style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSubtle(context)),
               ),
               const SizedBox(height: 14),
               Row(
@@ -331,7 +336,8 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: AppTheme.borderSubtle),
+                        side: BorderSide(color: AppTheme.border(context)),
+                        foregroundColor: AppTheme.text(context),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                       child: const Text('Tolak'),
@@ -349,7 +355,10 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             backgroundColor: AppTheme.primaryMint,
-                            content: Text('Rilis berhasil disetujui oleh Lead! Notifikasi terkirim.'),
+                            content: Text(
+                              'Rilis berhasil disetujui oleh Lead! Notifikasi terkirim.',
+                              style: TextStyle(color: Color(0xFF0A0E17), fontWeight: FontWeight.w700),
+                            ),
                           ),
                         );
                       },
@@ -373,13 +382,14 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
   // ==========================================
   // 2. TAMPILAN KHUSUS DEVELOPER (PROGRAMMER)
   // ==========================================
-  Widget _buildDeveloperDashboard(UserSession session) {
+  Widget _buildDeveloperDashboard(BuildContext context, UserSession session) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('STATUS KODING & PUSH TERAKHIR', AppTheme.roleDeveloper),
+        _buildSectionTitle(context, 'STATUS KODING & PUSH TERAKHIR', AppTheme.roleDeveloper),
         const SizedBox(height: 10),
         _buildCard(
+          context,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -389,7 +399,11 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                   const SizedBox(width: 8),
                   Text(
                     'devops-api / main',
-                    style: GoogleFonts.jetBrainsMono(fontSize: 13, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.text(context),
+                    ),
                   ),
                   const Spacer(),
                   Text(
@@ -401,12 +415,16 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               const SizedBox(height: 10),
               Text(
                 'Perbaikan bug koneksi database lokal & autentikasi',
-                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.text(context),
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 'Dipush 20 menit lalu oleh ${session.displayName}',
-                style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMuted),
+                style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMutedColor(context)),
               ),
               const SizedBox(height: 14),
               SizedBox(
@@ -421,7 +439,10 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         backgroundColor: AppTheme.roleDeveloper,
-                        content: Text('Fitur berhasil diajukan ke QA! Notifikasi terkirim.'),
+                        content: Text(
+                          'Fitur berhasil diajukan ke QA! Notifikasi terkirim.',
+                          style: TextStyle(color: Color(0xFF0A0E17), fontWeight: FontWeight.w700),
+                        ),
                       ),
                     );
                   },
@@ -441,7 +462,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
         Row(
           children: [
             Expanded(
-              child: _buildSectionTitle('CATATAN KERJA (SQLITE)', AppTheme.primaryMint),
+              child: _buildSectionTitle(context, 'CATATAN KERJA (SQLITE)', AppTheme.primaryMint),
             ),
             const SizedBox(width: 8),
             InkWell(
@@ -466,6 +487,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
         ),
         const SizedBox(height: 10),
         _buildCard(
+          context,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -475,7 +497,11 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                   const SizedBox(width: 8),
                   Text(
                     'Daftar Tugas Programmer',
-                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.text(context),
+                    ),
                   ),
                   const Spacer(),
                   IconButton(
@@ -485,9 +511,9 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                 ],
               ),
               const SizedBox(height: 6),
-              _buildTaskItem('Membuat form login & validasi token', true),
-              _buildTaskItem('Menyimpan catatan kerja ke database SQLite', false),
-              _buildTaskItem('Memasang alarm pengingat jam kerja', false),
+              _buildTaskItem(context, 'Membuat form login & validasi token', true),
+              _buildTaskItem(context, 'Menyimpan catatan kerja ke database SQLite', false),
+              _buildTaskItem(context, 'Memasang alarm pengingat jam kerja', false),
             ],
           ),
         ),
@@ -498,13 +524,14 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
   // ==========================================
   // 3. TAMPILAN KHUSUS QA ENGINEER (PENGUJI)
   // ==========================================
-  Widget _buildQADashboard(UserSession session) {
+  Widget _buildQADashboard(BuildContext context, UserSession session) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('FITUR BARU YANG PERLU DIUJI', AppTheme.roleQA),
+        _buildSectionTitle(context, 'FITUR BARU YANG PERLU DIUJI', AppTheme.roleQA),
         const SizedBox(height: 10),
         _buildCard(
+          context,
           borderColor: AppTheme.roleQA,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -536,17 +563,21 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               const SizedBox(height: 10),
               Text(
                 'Pengujian Fitur: Autentikasi & Database SQLite',
-                style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700),
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.text(context),
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 'Pastikan data tersimpan di SQLite lokal dan bisa dibuka saat HP offline.',
-                style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary),
+                style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSubtle(context)),
               ),
               const SizedBox(height: 14),
-              _buildTaskItem('Uji fungsi login pengguna', true),
-              _buildTaskItem('Uji simpan data catatan ke SQLite', true),
-              _buildTaskItem('Uji notifikasi pengingat jam kerja', false),
+              _buildTaskItem(context, 'Uji fungsi login pengguna', true),
+              _buildTaskItem(context, 'Uji simpan data catatan ke SQLite', true),
+              _buildTaskItem(context, 'Uji notifikasi pengingat jam kerja', false),
               const SizedBox(height: 14),
               Row(
                 children: [
@@ -577,7 +608,10 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             backgroundColor: AppTheme.roleQA,
-                            content: Text('Pengujian selesai! Dikirim ke Lead untuk approval.'),
+                            content: Text(
+                              'Pengujian selesai! Dikirim ke Lead untuk approval.',
+                              style: TextStyle(color: Color(0xFF0A0E17), fontWeight: FontWeight.w700),
+                            ),
                           ),
                         );
                       },
@@ -598,7 +632,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
     );
   }
 
-  Widget _buildSectionTitle(String title, Color accent) {
+  Widget _buildSectionTitle(BuildContext context, String title, Color accent) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -612,7 +646,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.5,
-              color: AppTheme.textSecondary,
+              color: AppTheme.textSubtle(context),
             ),
           ),
         ),
@@ -620,13 +654,13 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
     );
   }
 
-  Widget _buildMetricBox(String value, String label, Color color) {
+  Widget _buildMetricBox(BuildContext context, String value, String label, Color color) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: AppTheme.surface(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderSubtle),
+        border: Border.all(color: AppTheme.border(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -642,27 +676,27 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary),
+            style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSubtle(context)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCard({required Widget child, Color? borderColor}) {
+  Widget _buildCard(BuildContext context, {required Widget child, Color? borderColor}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.bgSurface,
+        color: AppTheme.surface(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor ?? AppTheme.borderSubtle, width: 1.2),
+        border: Border.all(color: borderColor ?? AppTheme.border(context), width: 1.2),
       ),
       child: child,
     );
   }
 
-  Widget _buildTaskItem(String title, bool isDone) {
+  Widget _buildTaskItem(BuildContext context, String title, bool isDone) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -670,7 +704,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
           Icon(
             isDone ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
             size: 16,
-            color: isDone ? AppTheme.primaryMint : AppTheme.textMuted,
+            color: isDone ? AppTheme.primaryMint : AppTheme.textMutedColor(context),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -679,7 +713,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               style: GoogleFonts.inter(
                 fontSize: 12,
                 decoration: isDone ? TextDecoration.lineThrough : null,
-                color: isDone ? AppTheme.textMuted : AppTheme.textPrimary,
+                color: isDone ? AppTheme.textMutedColor(context) : AppTheme.text(context),
               ),
             ),
           ),
@@ -688,11 +722,11 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.bgSurface,
-        border: Border(top: BorderSide(color: AppTheme.borderSubtle)),
+      decoration: BoxDecoration(
+        color: AppTheme.surface(context),
+        border: Border(top: BorderSide(color: AppTheme.border(context))),
       ),
       child: BottomNavigationBar(
         currentIndex: _currentNavIndex,
@@ -701,7 +735,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
         elevation: 0,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppTheme.primaryMint,
-        unselectedItemColor: AppTheme.textSecondary,
+        unselectedItemColor: AppTheme.textSubtle(context),
         selectedLabelStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
         unselectedLabelStyle: GoogleFonts.inter(fontSize: 11),
         items: const [

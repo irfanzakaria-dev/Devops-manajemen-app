@@ -28,12 +28,38 @@ class AppTheme {
   static const Color textMuted = Color(0xFF57606A);
 
   // Light Theme Colors
-  static const Color bgLight = Color(0xFFF8FAFC);
+  static const Color bgLight = Color(0xFFF1F5F9);
   static const Color bgLightSurface = Color(0xFFFFFFFF);
-  static const Color bgLightSurfaceElevated = Color(0xFFF1F5F9);
-  static const Color borderLightSubtle = Color(0xFFE2E8F0);
+  static const Color bgLightSurfaceElevated = Color(0xFFE2E8F0);
+  static const Color borderLightSubtle = Color(0xFFCBD5E1);
   static const Color textLightPrimary = Color(0xFF0F172A);
   static const Color textLightSecondary = Color(0xFF64748B);
+  static const Color textLightMuted = Color(0xFF94A3B8);
+
+  // Dynamic Context-Aware Colors (Responsive to Dark / Light Mode)
+  static bool isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  static Color bg(BuildContext context) =>
+      isDark(context) ? bgDark : bgLight;
+
+  static Color surface(BuildContext context) =>
+      isDark(context) ? bgSurface : bgLightSurface;
+
+  static Color surfaceElevated(BuildContext context) =>
+      isDark(context) ? bgSurfaceElevated : bgLightSurfaceElevated;
+
+  static Color border(BuildContext context) =>
+      isDark(context) ? borderSubtle : borderLightSubtle;
+
+  static Color text(BuildContext context) =>
+      isDark(context) ? textPrimary : textLightPrimary;
+
+  static Color textSubtle(BuildContext context) =>
+      isDark(context) ? textSecondary : textLightSecondary;
+
+  static Color textMutedColor(BuildContext context) =>
+      isDark(context) ? textMuted : textLightMuted;
 
   static ThemeData get darkTheme {
     return ThemeData(

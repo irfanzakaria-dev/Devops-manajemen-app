@@ -64,3 +64,4 @@ class SettingsService extends ChangeNotifier {
     notifyListeners();
   }
 }
+
