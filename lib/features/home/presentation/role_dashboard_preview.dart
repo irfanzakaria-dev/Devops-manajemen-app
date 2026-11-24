@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/services/notification_service.dart';
 import '../../auth/models/user_session.dart';
 import '../../auth/presentation/welcome_screen.dart';
 import '../../work_notes/presentation/work_notes_screen.dart';
+import '../../reminders/presentation/reminders_screen.dart';
 
 class RoleDashboardPreview extends StatefulWidget {
   const RoleDashboardPreview({super.key});
@@ -53,12 +55,8 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               ),
               // Tab 1: Catatan Kerja Tim (SQLite Database)
               const WorkNotesScreen(),
-              // Tab 2: Pengingat & Alarm (Tahap 3)
-              _buildPlaceholderScreen(
-                'Pengingat & Alarm Harian',
-                'Fitur Alarm & Scheduler (Tahap 3)\nUntuk jadwal daily standup & pengingat isi tugas.',
-                Icons.alarm_rounded,
-              ),
+              // Tab 2: Pengingat & Alarm Berjadwal (Tahap 3 Selesai)
+              const RemindersScreen(),
               // Tab 3: Pengaturan (Tahap 4)
               _buildPlaceholderScreen(
                 'Pengaturan & Preferensi',
@@ -377,10 +375,15 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
+                        NotificationService.instance.showNotification(
+                          id: 301,
+                          title: '🎉 Rilis Disetujui oleh Lead',
+                          body: 'Aplikasi Mobile v1.2.0 berhasil disetujui dan siap deploy ke server produksi!',
+                        );
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             backgroundColor: AppTheme.primaryMint,
-                            content: Text('Rilis berhasil disetujui oleh Lead!'),
+                            content: Text('Rilis berhasil disetujui oleh Lead! Notifikasi terkirim.'),
                           ),
                         );
                       },
@@ -444,10 +447,15 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    NotificationService.instance.showNotification(
+                      id: 101,
+                      title: '🚀 Fitur Baru Diajukan ke QA',
+                      body: 'Sarah Chen mengajukan fitur database & autentikasi untuk diverifikasi QA.',
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         backgroundColor: AppTheme.roleDeveloper,
-                        content: Text('Fitur berhasil diajukan ke QA untuk diuji!'),
+                        content: Text('Fitur berhasil diajukan ke QA! Notifikasi terkirim.'),
                       ),
                     );
                   },
@@ -595,6 +603,11 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
+                        NotificationService.instance.showNotification(
+                          id: 201,
+                          title: '✅ Fitur Lolos Uji QA',
+                          body: 'Verifikasi rilis v1.2.0 telah lolos uji dan diteruskan ke Lead untuk persetujuan akhir.',
+                        );
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             backgroundColor: AppTheme.roleQA,

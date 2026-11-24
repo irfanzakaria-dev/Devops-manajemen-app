@@ -41,6 +41,8 @@ dependencies:
   sqflite: ^2.4.6
   path: ^1.9.1
   sqflite_common_ffi: ^2.4.7
+  flutter_local_notifications: ^23.0.4
+  timezone: ^0.11.2
 
 dev_dependencies:
   flutter_test:
