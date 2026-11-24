@@ -6,6 +6,7 @@ import '../../auth/models/user_session.dart';
 import '../../auth/presentation/welcome_screen.dart';
 import '../../work_notes/presentation/work_notes_screen.dart';
 import '../../reminders/presentation/reminders_screen.dart';
+import '../../settings/presentation/settings_screen.dart';
 
 class RoleDashboardPreview extends StatefulWidget {
   const RoleDashboardPreview({super.key});
@@ -57,48 +58,13 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               const WorkNotesScreen(),
               // Tab 2: Pengingat & Alarm Berjadwal (Tahap 3 Selesai)
               const RemindersScreen(),
-              // Tab 3: Pengaturan (Tahap 4)
-              _buildPlaceholderScreen(
-                'Pengaturan & Preferensi',
-                'Fitur SharedPreferences & Pengaturan Tema (Tahap 4)',
-                Icons.settings_rounded,
-              ),
+              // Tab 3: Pengaturan & Preferensi SharedPreferences (Tahap 4 Selesai)
+              const SettingsScreen(),
             ],
           ),
           bottomNavigationBar: _buildBottomNav(),
         );
       },
-    );
-  }
-
-  Widget _buildPlaceholderScreen(String title, String desc, IconData icon) {
-    return Scaffold(
-      backgroundColor: AppTheme.bgDark,
-      appBar: AppBar(
-        title: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 56, color: AppTheme.primaryMint),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                desc,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary, height: 1.4),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 

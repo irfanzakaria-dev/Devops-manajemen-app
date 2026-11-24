@@ -38,7 +38,7 @@ Aplikasi ini dirancang untuk memenuhi secara lengkap 7 kriteria penilaian teknis
 | **2** | **Local Database SQLite** | Database lokal `sqflite` untuk menyimpan Catatan Kerja tim (CRUD lengkap) secara *offline-first*. | ✅ **Selesai** |
 | **3** | **Alarm and Scheduler** | Pengingat jam kerja harian (*Daily Standup / Log Reminder*) dengan alarm berjadwal di memori OS. | ✅ **Selesai** |
 | **4** | **Notification** | Notifikasi pop-up di status bar HP saat tugas diajukan ke QA, rilis disetujui, atau alarm berbunyi. | ✅ **Selesai** |
-| **5** | **Preference and Setting** | Pengaturan tema (Dark/Light mode) dan preferensi alarm menggunakan `SharedPreferences`. | ⏳ *Tahap 4 (Akan Datang)* |
+| **5** | **Preference and Setting** | Pengaturan tema (Dark/Light mode) dan preferensi alarm menggunakan `SharedPreferences`. | ✅ **Selesai** |
 | **6** | **Background Task** | Eksekusi tugas berkala di latar belakang menggunakan `WorkManager` untuk memantau tugas tertunda. | ⏳ *Tahap 5 (Akan Datang)* |
 | **7** | **Online App** | Sinkronisasi dua arah data catatan kerja ke server REST API / Cloud Database saat online. | ⏳ *Tahap 5 (Akan Datang)* |
 
@@ -117,7 +117,7 @@ flutter pub get
 - [x] **Tahap 1**: UI/UX Autentikasi, Otomasi Workspace & Pemisahan 3 Peran (RBAC).
 - [x] **Tahap 2**: Integrasi Database SQLite Lokal (`sqflite`), Skema Catatan Kerja, dan CRUD Interaktif.
 - [x] **Tahap 3**: Fitur Pengingat Harian & Alarm Berjadwal + Notifikasi Lokal di Status Bar Android.
-- [ ] **Tahap 4**: Halaman Pengaturan, Tema Gelap/Terang, dan Persistensi Preferensi Pengguna.
+- [x] **Tahap 4**: Halaman Pengaturan, Tema Gelap/Terang, dan Persistensi Preferensi Pengguna.
 - [ ] **Tahap 5**: Integrasi Background Task (`WorkManager`) & Sinkronisasi Online REST API.
 
 ---

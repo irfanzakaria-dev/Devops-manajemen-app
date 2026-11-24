@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Brand Colors matching UI/UX in Untitled (3)
+  // Brand Colors matching UI/UX
   static const Color primaryMint = Color(0xFF00D2A0);
   static const Color primaryMintDark = Color(0xFF00A880);
   static const Color bgDark = Color(0xFF0A0E17);
@@ -22,10 +22,18 @@ class AppTheme {
   static const Color roleDeveloper = Color(0xFF06B6D4);
   static const Color roleQA = Color(0xFF10B981);
 
-  // Text Colors
+  // Dark Text Colors
   static const Color textPrimary = Color(0xFFF0F6FC);
   static const Color textSecondary = Color(0xFF8B949E);
   static const Color textMuted = Color(0xFF57606A);
+
+  // Light Theme Colors
+  static const Color bgLight = Color(0xFFF8FAFC);
+  static const Color bgLightSurface = Color(0xFFFFFFFF);
+  static const Color bgLightSurfaceElevated = Color(0xFFF1F5F9);
+  static const Color borderLightSubtle = Color(0xFFE2E8F0);
+  static const Color textLightPrimary = Color(0xFF0F172A);
+  static const Color textLightSecondary = Color(0xFF64748B);
 
   static ThemeData get darkTheme {
     return ThemeData(
@@ -58,6 +66,41 @@ class AppTheme {
           color: textPrimary,
         ),
         iconTheme: const IconThemeData(color: textPrimary),
+      ),
+    );
+  }
+
+  static ThemeData get lightTheme {
+    return ThemeData(
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: bgLight,
+      primaryColor: primaryMint,
+      canvasColor: bgLight,
+      cardColor: bgLightSurface,
+      dividerColor: borderLightSubtle,
+      textTheme: const TextTheme(
+        bodyLarge: TextStyle(color: textLightPrimary),
+        bodyMedium: TextStyle(color: textLightPrimary),
+        bodySmall: TextStyle(color: textLightSecondary),
+      ),
+      colorScheme: const ColorScheme.light(
+        primary: primaryMint,
+        secondary: roleDeveloper,
+        surface: bgLightSurface,
+        error: sev1Critical,
+        onPrimary: Color(0xFFFFFFFF),
+        onSurface: textLightPrimary,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: bgLight,
+        elevation: 0,
+        centerTitle: false,
+        titleTextStyle: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: textLightPrimary,
+        ),
+        iconTheme: const IconThemeData(color: textLightPrimary),
       ),
     );
   }
