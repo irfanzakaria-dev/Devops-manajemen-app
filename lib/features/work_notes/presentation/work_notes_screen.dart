@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/database/db_helper.dart';
+import '../../../core/services/online_sync_service.dart';
 import '../../auth/models/user_session.dart';
 import '../models/work_note.dart';
 
@@ -63,6 +64,31 @@ class _WorkNotesScreenState extends State<WorkNotesScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            tooltip: 'Sinkronkan ke Cloud (REST API)',
+            icon: Icon(Icons.cloud_sync_rounded, size: 20, color: AppTheme.text(context)),
+            onPressed: () async {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Menyinkronkan catatan kerja ke server cloud...')),
+              );
+              final success = await OnlineSyncService.instance.syncLocalTasksToCloud();
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: success ? AppTheme.primaryMint : AppTheme.sev2Warning,
+                  content: Text(
+                    success
+                        ? 'Catatan kerja berhasil disinkronkan ke server online!'
+                        : 'Offline: Data aman di database SQLite lokal.',
+                    style: TextStyle(
+                      color: success ? const Color(0xFF0A0E17) : Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(
             tooltip: 'Segarkan Data SQLite',
             icon: Icon(Icons.refresh_rounded, size: 20, color: AppTheme.text(context)),

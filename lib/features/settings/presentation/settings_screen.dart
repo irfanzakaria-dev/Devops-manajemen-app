@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/settings_service.dart';
+import '../../../core/services/online_sync_service.dart';
+import '../../../core/services/background_task_service.dart';
 import '../../../core/database/db_helper.dart';
 import '../../auth/models/user_session.dart';
 import '../../auth/presentation/welcome_screen.dart';
@@ -310,6 +312,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSyncPrefsCard(BuildContext context, SettingsService settings) {
+    final syncService = OnlineSyncService.instance;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -333,7 +337,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.text(context)),
                     ),
                     Text(
-                      'Sinkronkan data berkala di latar belakang',
+                      'Sinkronkan data berkala di latar belakang (WorkManager)',
                       style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSubtle(context)),
                     ),
                   ],
@@ -343,7 +347,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: settings.autoSyncEnabled,
                 activeThumbColor: AppTheme.primaryMint,
                 activeTrackColor: AppTheme.primaryMint.withValues(alpha: 0.3),
-                onChanged: (val) => settings.setAutoSyncEnabled(val),
+                onChanged: (val) async {
+                  settings.setAutoSyncEnabled(val);
+                  if (val) {
+                    await BackgroundTaskService.instance.registerPeriodicSync(
+                      intervalMinutes: settings.syncIntervalMinutes,
+                    );
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Background task berkala diaktifkan via WorkManager.')),
+                    );
+                  } else {
+                    await BackgroundTaskService.instance.cancelPeriodicSync();
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Background task dinonaktifkan.')),
+                    );
+                  }
+                },
               ),
             ],
           ),
@@ -369,16 +390,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   DropdownMenuItem(value: 30, child: Text('30 Menit', style: TextStyle(fontSize: 12, color: AppTheme.text(context)))),
                   DropdownMenuItem(value: 60, child: Text('1 Jam', style: TextStyle(fontSize: 12, color: AppTheme.text(context)))),
                 ],
-                onChanged: (val) {
+                onChanged: (val) async {
                   if (val != null) {
                     settings.setSyncInterval(val);
+                    if (settings.autoSyncEnabled) {
+                      await BackgroundTaskService.instance.registerPeriodicSync(intervalMinutes: val);
+                    }
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Interval sinkronisasi diatur ke $val menit.')),
+                      SnackBar(content: Text('Interval background task diatur ke $val menit.')),
                     );
                   }
                 },
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          Divider(color: AppTheme.border(context), height: 1),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Terakhir Sinkron:', style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMutedColor(context))),
+              Text(
+                syncService.lastSyncTimeFormatted,
+                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.text(context)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Mengeksekusi Background Task...')),
+                );
+                await BackgroundTaskService.instance.triggerImmediateSync();
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    backgroundColor: AppTheme.primaryMint,
+                    content: Text(
+                      'Background Task berhasil dijalankan! Notifikasi sistem dikirim.',
+                      style: TextStyle(color: Color(0xFF0A0E17), fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.play_arrow_rounded, size: 16),
+              label: const Text('Uji Eksekusi Background Task Sekarang'),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: AppTheme.border(context)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                foregroundColor: AppTheme.text(context),
+                textStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ),
           ),
         ],
       ),

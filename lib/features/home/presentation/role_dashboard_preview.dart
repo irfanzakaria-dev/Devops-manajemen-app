@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/services/online_sync_service.dart';
+import '../../../core/services/background_task_service.dart';
 import '../../auth/models/user_session.dart';
 import '../../auth/presentation/welcome_screen.dart';
 import '../../work_notes/presentation/work_notes_screen.dart';
@@ -21,7 +23,7 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: UserSession.instance,
+      animation: Listenable.merge([UserSession.instance, OnlineSyncService.instance]),
       builder: (context, _) {
         final session = UserSession.instance;
         final currentRole = session.role;
@@ -69,6 +71,8 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context, UserSession session) {
+    final sync = OnlineSyncService.instance;
+
     return AppBar(
       backgroundColor: AppTheme.bg(context),
       title: Row(
@@ -76,8 +80,8 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
           Container(
             width: 8,
             height: 8,
-            decoration: const BoxDecoration(
-              color: AppTheme.primaryMint,
+            decoration: BoxDecoration(
+              color: sync.isOnline ? AppTheme.primaryMint : AppTheme.sev2Warning,
               shape: BoxShape.circle,
             ),
           ),
@@ -94,25 +98,45 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
             ),
           ),
           const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: AppTheme.surfaceElevated(context),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: AppTheme.border(context)),
-            ),
-            child: Text(
-              'Online',
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                color: AppTheme.primaryMint,
-                fontWeight: FontWeight.w600,
+          InkWell(
+            onTap: () => _showCloudSyncModal(context),
+            borderRadius: BorderRadius.circular(4),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceElevated(context),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: AppTheme.border(context)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    sync.isOnline ? Icons.cloud_done_rounded : Icons.cloud_off_rounded,
+                    size: 11,
+                    color: sync.isOnline ? AppTheme.primaryMint : AppTheme.sev2Warning,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    sync.isOnline ? 'Online' : 'Offline',
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      color: sync.isOnline ? AppTheme.primaryMint : AppTheme.sev2Warning,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
         ],
       ),
       actions: [
+        IconButton(
+          tooltip: 'Sinkronisasi Cloud',
+          icon: Icon(Icons.cloud_sync_rounded, size: 20, color: AppTheme.textSubtle(context)),
+          onPressed: () => _showCloudSyncModal(context),
+        ),
         IconButton(
           tooltip: 'Keluar (Logout)',
           icon: Icon(Icons.logout_rounded, size: 20, color: AppTheme.textSubtle(context)),
@@ -262,6 +286,143 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
   }
 
   // ==========================================
+  // KARTU SINKRONISASI ONLINE & CLOUD API (TAHAP 5)
+  // ==========================================
+  Widget _buildOnlineSyncCard(BuildContext context) {
+    final sync = OnlineSyncService.instance;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle(context, 'SINKRONISASI ONLINE & CLOUD API', AppTheme.primaryMint),
+        const SizedBox(height: 10),
+        _buildCard(
+          context,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: sync.isOnline ? AppTheme.primaryMint : AppTheme.sev2Warning,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    sync.isOnline ? 'Cloud REST API: Terhubung' : 'Cloud REST API: Offline',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.text(context),
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryMint.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'Online Sync ✓',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primaryMint,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                sync.lastSyncMessage,
+                style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSubtle(context)),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'Terakhir sinkronisasi: ${sync.lastSyncTimeFormatted}',
+                style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textMutedColor(context)),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: sync.isSyncing
+                          ? null
+                          : () async {
+                              final success = await sync.syncLocalTasksToCloud();
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: success ? AppTheme.primaryMint : AppTheme.sev2Warning,
+                                  content: Text(
+                                    success
+                                        ? 'Sinkronisasi Cloud Berhasil! (${sync.syncedItemCount} data tersinkron).'
+                                        : 'Mode Offline: Data aman tersimpan di SQLite lokal.',
+                                    style: TextStyle(
+                                      color: success ? const Color(0xFF0A0E17) : Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                      icon: sync.isSyncing
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0A0E17)),
+                            )
+                          : const Icon(Icons.cloud_upload_rounded, size: 16),
+                      label: Text(sync.isSyncing ? 'Sinkron...' : 'Sinkron ke Cloud'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryMint,
+                        foregroundColor: const Color(0xFF0A0E17),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        textStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        await BackgroundTaskService.instance.triggerImmediateSync();
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Background task dieksekusi! Notifikasi latar belakang dikirim.'),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.sync_rounded, size: 16),
+                      label: const Text('Background Task'),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: AppTheme.border(context)),
+                        foregroundColor: AppTheme.text(context),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        textStyle: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================
   // 1. TAMPILAN KHUSUS LEAD (KETUA TIM)
   // ==========================================
   Widget _buildLeadDashboard(BuildContext context, UserSession session) {
@@ -375,6 +536,9 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
             ],
           ),
         ),
+        const SizedBox(height: 20),
+        // Integrasi Sinkronisasi Online & Cloud (Tahap 5)
+        _buildOnlineSyncCard(context),
       ],
     );
   }
@@ -383,6 +547,9 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
   // 2. TAMPILAN KHUSUS DEVELOPER (PROGRAMMER)
   // ==========================================
   Widget _buildDeveloperDashboard(BuildContext context, UserSession session) {
+    final sync = OnlineSyncService.instance;
+    final latestCommit = sync.recentCommits.isNotEmpty ? sync.recentCommits.first : null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -406,15 +573,24 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
                     ),
                   ),
                   const Spacer(),
-                  Text(
-                    'Kompilasi Berhasil',
-                    style: GoogleFonts.inter(fontSize: 11, color: AppTheme.primaryMint, fontWeight: FontWeight.w600),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryMint.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'GitHub Synced',
+                      style: GoogleFonts.inter(fontSize: 10, color: AppTheme.primaryMint, fontWeight: FontWeight.w700),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 10),
               Text(
-                'Perbaikan bug koneksi database lokal & autentikasi',
+                latestCommit != null
+                    ? latestCommit.message
+                    : 'Perbaikan bug koneksi database lokal & autentikasi',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -423,7 +599,9 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Dipush 20 menit lalu oleh ${session.displayName}',
+                latestCommit != null
+                    ? 'Commit #${latestCommit.sha} oleh ${latestCommit.author}'
+                    : 'Dipush 20 menit lalu oleh ${session.displayName}',
                 style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textMutedColor(context)),
               ),
               const SizedBox(height: 14),
@@ -512,11 +690,14 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               ),
               const SizedBox(height: 6),
               _buildTaskItem(context, 'Membuat form login & validasi token', true),
-              _buildTaskItem(context, 'Menyimpan catatan kerja ke database SQLite', false),
-              _buildTaskItem(context, 'Memasang alarm pengingat jam kerja', false),
+              _buildTaskItem(context, 'Menyimpan catatan kerja ke database SQLite', true),
+              _buildTaskItem(context, 'Sinkronisasi online cloud & background task', true),
             ],
           ),
         ),
+        const SizedBox(height: 20),
+        // Integrasi Sinkronisasi Online & Cloud (Tahap 5)
+        _buildOnlineSyncCard(context),
       ],
     );
   }
@@ -571,13 +752,13 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Pastikan data tersimpan di SQLite lokal dan bisa dibuka saat HP offline.',
+                'Pastikan data tersimpan di SQLite lokal dan bisa disinkronkan ke server online.',
                 style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSubtle(context)),
               ),
               const SizedBox(height: 14),
               _buildTaskItem(context, 'Uji fungsi login pengguna', true),
               _buildTaskItem(context, 'Uji simpan data catatan ke SQLite', true),
-              _buildTaskItem(context, 'Uji notifikasi pengingat jam kerja', false),
+              _buildTaskItem(context, 'Uji sinkronisasi online & background task', true),
               const SizedBox(height: 14),
               Row(
                 children: [
@@ -628,6 +809,9 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
             ],
           ),
         ),
+        const SizedBox(height: 20),
+        // Integrasi Sinkronisasi Online & Cloud (Tahap 5)
+        _buildOnlineSyncCard(context),
       ],
     );
   }
@@ -745,6 +929,117 @@ class _RoleDashboardPreviewState extends State<RoleDashboardPreview> {
           BottomNavigationBarItem(icon: Icon(Icons.settings_rounded), label: 'Pengaturan'),
         ],
       ),
+    );
+  }
+
+  void _showCloudSyncModal(BuildContext context) {
+    final sync = OnlineSyncService.instance;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surface(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryMint.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.cloud_sync_rounded, color: AppTheme.primaryMint, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'DevOps Cloud Synchronization',
+                          style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.text(ctx)),
+                        ),
+                        Text(
+                          'REST API & Android WorkManager',
+                          style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSubtle(ctx)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close_rounded, size: 20, color: AppTheme.textSubtle(ctx)),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceElevated(ctx),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.border(ctx)),
+                ),
+                child: Column(
+                  children: [
+                    _buildModalRow(ctx, 'Status Jaringan', sync.isOnline ? 'Terhubung (Online)' : 'Terputus (Offline)'),
+                    const SizedBox(height: 8),
+                    _buildModalRow(ctx, 'Terakhir Sinkron', sync.lastSyncTimeFormatted),
+                    const SizedBox(height: 8),
+                    _buildModalRow(ctx, 'Total Catatan Cloud', '${sync.syncedItemCount} Data'),
+                    const SizedBox(height: 8),
+                    _buildModalRow(ctx, 'Background Task', 'WorkManager Aktif (15m)'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    await sync.syncLocalTasksToCloud();
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        backgroundColor: AppTheme.primaryMint,
+                        content: Text('Sinkronisasi cloud online berhasil dieksekusi!', style: TextStyle(color: Color(0xFF0A0E17), fontWeight: FontWeight.w700)),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text('Sinkronkan Sekarang ke Cloud'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryMint,
+                    foregroundColor: const Color(0xFF0A0E17),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    textStyle: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildModalRow(BuildContext context, String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSubtle(context))),
+        Text(value, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.text(context))),
+      ],
     );
   }
 }
